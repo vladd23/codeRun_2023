@@ -5,12 +5,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import ro.cognizant.coderun2023.domain.Book;
+import ro.cognizant.coderun2023.domain.Order;
 import ro.cognizant.coderun2023.domain.validator.BookNotFoundException;
 
-import java.sql.Array;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 public class BookController {
@@ -40,13 +39,13 @@ public class BookController {
     List<Book> searchBook(String name){
         List<Book> books = new ArrayList<>();
         for(Book b: repo.findAll()){
-            if(Objects.equals(b.getBookName(), name) || Objects.equals(b.getAuthor(), name) || publisherInList(name, b.getPublisherList()))
+            if(Objects.equals(b.getBookName(), name) || Objects.equals(b.getAuthor(), name) || publisherList(name, b.getPublisherList()))
                 books.add(b);
         }
         return books;
     }
 
-    boolean publisherInList(String name, List<String> publishers){
+    boolean publisherList(String name, List<String> publishers){
         for(String publisher: publishers){
             if(Objects.equals(publisher, name))
                 return true;
@@ -54,5 +53,55 @@ public class BookController {
         return false;
     }
 
+    String publisherInList(String name){
+        List<Book> publishers = searchBook(name);
+        for(Book publisher: publishers)
+            if(publisherList(name, Collections.singletonList(publisher.getBookName())))
+                for(String p: publisher.getPublisherList()){
+                    if(Objects.equals(p, name))
+                        return name;
+        }
+        return null;
+    }
+
+    List<Book> sortByName(String name, Order ord) {
+        List<Book> colList = searchBook(name);
+        if(ord == Order.ASC)
+            return colList.stream()
+                .sorted(Comparator.comparing(Book::getBookName))
+                .collect(Collectors.toList());
+        else if(ord == Order.DESC)
+            return colList.stream()
+                    .sorted(Comparator.comparing(Book::getBookName).reversed())
+                    .collect(Collectors.toList());
+        return null;
+    }
+
+    List<Book> sortByAuthor(String name, Order ord) {
+        List<Book> colList = searchBook(name);
+
+        if(ord == Order.ASC)
+            return colList.stream()
+                .sorted(Comparator.comparing(Book::getAuthor))
+                .collect(Collectors.toList());
+        else if(ord == Order.DESC)
+            return colList.stream()
+                    .sorted(Comparator.comparing(Book::getAuthor).reversed())
+                    .collect(Collectors.toList());
+        return null;
+    }
+//    List<Book> sortByPublisher(String name, Order ord) {
+//        List<Book> colList = searchBook(name);
+//
+//        if(ord == Order.ASC)
+//            return colList.stream()
+//                .sorted(Comparator.comparing(publisherInList(name)))
+//                .collect(Collectors.toList());
+//        else if(ord == Order.DESC)
+//            return colList.stream()
+//                    .sorted(Comparator.comparing(publisherInList(name)).reversed())
+//                    .collect(Collectors.toList());
+//
+//    }
 
 }
