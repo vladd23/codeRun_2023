@@ -7,7 +7,8 @@ import { BooksService } from '../books.service';
   selector: 'app-books',
   templateUrl: './books.component.html',
   styleUrls: ['./books.component.css']
-})
+}
+)
 export class BooksComponent implements OnInit{
   books: Book[] = [];
 
